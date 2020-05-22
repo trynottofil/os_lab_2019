@@ -42,16 +42,31 @@ int main(int argc, char **argv) {
             seed = atoi(optarg);
             // your code here
             // error handling
+            if (seed < 0)
+				{
+					printf("Seed=%d < 0!\n", seed);
+					return 1;
+				}
             break;
           case 1:
             array_size = atoi(optarg);
             // your code here
             // error handling
+            if (array_size < 0)
+				{
+					printf("Array size=%d < 0!\n", array_size);
+					return 1;
+				}
             break;
           case 2:
             pnum = atoi(optarg);
             // your code here
             // error handling
+            if (pnum <= 0)
+				{
+					printf("Number of processes =%d <= 0!\n", pnum);
+					return 1;
+				}
             break;
           case 3:
             with_files = true;
@@ -90,23 +105,49 @@ int main(int argc, char **argv) {
 
   struct timeval start_time;
   gettimeofday(&start_time, NULL);
+  
+  int file_pipes[2];
+	pipe(file_pipes);
 
   for (int i = 0; i < pnum; i++) {
     pid_t child_pid = fork();
     if (child_pid >= 0) {
       // successful fork
       active_child_processes += 1;
-      if (child_pid == 0) {
-        // child process
+      if (child_pid == 0) { 
+				struct MinMax min_max;
+				int Part_Size = array_size / pnum;
+				if (i == pnum - 1) 
+				{
+					min_max = GetMinMax(array, i*Part_Size, array_size);
+				}
+				else
+				{
+					min_max = GetMinMax(array, i*Part_Size, (i + 1)*Part_Size);
+				}
 
-        // parallel somehow
 
-        if (with_files) {
-          // use files here
-        } else {
-          // use pipe here
-        }
-        return 0;
+
+				if (with_files) 
+				{
+					// use files here
+
+					FILE *f;
+					if (i == 0)f = fopen("data.txt", "w"); 
+					else f = fopen("data.txt", "a+");     
+
+					fprintf(f, "%d\n", min_max.min);
+					fprintf(f, "%d\n", min_max.max);
+					fclose(f);
+				}
+				else
+				{
+					// use pipe here
+
+					write(file_pipes[1], &min_max, sizeof(struct MinMax));
+
+				}
+				return 0;
       }
 
     } else {
@@ -117,7 +158,8 @@ int main(int argc, char **argv) {
 
   while (active_child_processes > 0) {
     // your code here
-
+    int status;
+		wait(&status);
     active_child_processes -= 1;
   }
 
@@ -125,31 +167,54 @@ int main(int argc, char **argv) {
   min_max.min = INT_MAX;
   min_max.max = INT_MIN;
 
-  for (int i = 0; i < pnum; i++) {
-    int min = INT_MAX;
-    int max = INT_MIN;
+  for (int i = 0; i < pnum; i++) 
+	{
+		int min = INT_MAX;
+		int max = INT_MIN;
 
-    if (with_files) {
-      // read from files
-    } else {
-      // read from pipes
-    }
+		if (with_files)
+		{
+			// read from files
+			struct MinMax NewMinMax;
+			FILE *f;
+			f = fopen("data.txt", "r");
+			for (int j = 0; j < i; j++)
+			{
+				fscanf(f, "%d", &NewMinMax.min);
+				fscanf(f, "%d", &NewMinMax.min);
+			}
+			fscanf(f, "%d", &NewMinMax.min);
+			fscanf(f, "%d", &NewMinMax.max);
+			fclose(f);
+			min = NewMinMax.min;
+			max = NewMinMax.max;
 
-    if (min < min_max.min) min_max.min = min;
-    if (max > min_max.max) min_max.max = max;
-  }
+		}
+		else
+		{
+			// read from pipes
+			struct MinMax NewMinMax;
+			read(file_pipes[0], &NewMinMax, sizeof(struct MinMax));
+			min = NewMinMax.min;
+			max = NewMinMax.max;
 
-  struct timeval finish_time;
-  gettimeofday(&finish_time, NULL);
+		}
 
-  double elapsed_time = (finish_time.tv_sec - start_time.tv_sec) * 1000.0;
-  elapsed_time += (finish_time.tv_usec - start_time.tv_usec) / 1000.0;
+		if (min < min_max.min) min_max.min = min;
+		if (max > min_max.max) min_max.max = max;
+	}
 
-  free(array);
+	struct timeval finish_time;
+	gettimeofday(&finish_time, NULL);
 
-  printf("Min: %d\n", min_max.min);
-  printf("Max: %d\n", min_max.max);
-  printf("Elapsed time: %fms\n", elapsed_time);
-  fflush(NULL);
-  return 0;
+	double elapsed_time = (finish_time.tv_sec - start_time.tv_sec) * 1000.0;
+	elapsed_time += (finish_time.tv_usec - start_time.tv_usec) / 1000.0;
+
+	free(array);
+
+	printf("Min: %d\n", min_max.min);
+	printf("Max: %d\n", min_max.max);
+	printf("Elapsed time: %fms\n", elapsed_time);
+	fflush(NULL);
+	return 0;
 }
