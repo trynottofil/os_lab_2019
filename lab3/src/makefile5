@@ -1,0 +1,37 @@
+CC=gcc
+CFLAGS=-I.
+CFLAGS1=--seed 1 --array_size 10 --pnum 3 --by_files
+CFLAGS1_1=--seed 1 --array_size 10 --pnum 3 
+CFLAGS2=1 10
+
+all : Compile_P Compile_s Compile_P2 exec_run
+
+Compile_s : sequential_min_max
+	./sequential_min_max $(CFLAGS2)
+
+Compile_P : parallel_min_max
+	./parallel_min_max $(CFLAGS1)
+
+Compile_P2 : parallel_min_max
+	./parallel_min_max $(CFLAGS1_1)
+
+exec_run: execScript
+	./execScript
+
+execScript:
+	$(CC) -std=gnu99 -o execScript execScript.c $(CFLAGS) 
+
+sequential_min_max : utils.o find_min_max.o utils.h find_min_max.h
+	$(CC) -std=gnu99 -o sequential_min_max find_min_max.o utils.o sequential_min_max.c $(CFLAGS)
+
+parallel_min_max : utils.o find_min_max.o utils.h find_min_max.h
+	$(CC) -std=gnu99 -o parallel_min_max utils.o find_min_max.o parallel_min_max.c $(CFLAGS)
+
+utils.o : utils.h
+	$(CC) -std=gnu99 -o utils.o -std=gnu99 -c utils.c $(CFLAGS)
+
+find_min_max.o : utils.h find_min_max.h
+	$(CC) -std=gnu99 -o find_min_max.o -std=gnu99 -c find_min_max.c $(CFLAGS)
+
+clean :
+	rm *.o sequential_min_max parallel_min_max execScript
