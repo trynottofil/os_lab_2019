@@ -9,8 +9,8 @@ int main()
 	child_process = fork();
 	if (child_process > 0)
 	{
-		/* Hодительский процесс — делаем паузу. */
-		sleep(45);
+		/* Pодительский процесс — делаем паузу. */
+		sleep(70);
 	}
 	else 
 	{

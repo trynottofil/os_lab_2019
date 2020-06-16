@@ -16,6 +16,8 @@
 #include "find_min_max.h"
 #include "utils.h"
 
+#define _XOPEN_SOURCE
+
 pid_t* child_pids = NULL;
 int len = -1;
 bool DeadChild = false;

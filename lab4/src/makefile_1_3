@@ -1,0 +1,11 @@
+CC=gcc
+CFLAGS=-I.
+
+all:parallel_min_max zombie_process
+
+
+zombie: zombie.c
+	$(CC) -std=gnu99 -o zombie_process -c zombie_process.c $(CFLAGS)
+
+parallel_min_max:
+	make -C ./ -f makefile_1
