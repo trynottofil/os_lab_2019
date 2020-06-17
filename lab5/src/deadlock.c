@@ -78,11 +78,11 @@ void main() {
 
 	init_table(&table);
 
-	init_philosopher(&philosophers[0], "Alice", 0, 1);
-	init_philosopher(&philosophers[1], "Bob", 1, 2);
-	init_philosopher(&philosophers[2], "Clark", 2, 3);
-	init_philosopher(&philosophers[3], "Denis", 3, 4);
-	init_philosopher(&philosophers[4], "Eugin", 4, 0);
+	init_philosopher(&philosophers[0], "Egor", 0, 1);
+	init_philosopher(&philosophers[1], "Georgy", 1, 2);
+	init_philosopher(&philosophers[2], "Vitaly", 2, 3);
+	init_philosopher(&philosophers[3], "Vadim", 3, 4);
+	init_philosopher(&philosophers[4], "Nikita", 4, 0);
 
 	for (i = 0; i < PHT_SIZE; i++) {
 		arguments[i].philosopher = &philosophers[i];
